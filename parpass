@@ -1,0 +1,94 @@
+#! /bin/bash
+#
+# parpass 1.0.0	- 2020-06-14
+#
+# Reads the password file /etc/passwd and search for usernames which
+# begin with $1, and parses the dataset for printing it in humand
+# readabel form to the screen.
+#
+# Bernd Storck
+#
+# Kontakt: https://www.facebook.com/BStLinux/
+# 
+
+SCRIPT="parpass"
+TITLE="$SCRIPT (parsePasswd)"
+VERSION="1.0.0"
+OLDIFS="$IFS"
+IFS=":"
+rm -f /tmp/parpass.tmp
+
+function hilfe () {
+# Displays program purpose and usage help.
+
+echo -e "\e[1;33m$TITLE $VERSION \e[0m\n"
+
+if [ "$(echo "$LANG" | cut -c 1-2)" == "de" ]; then
+	echo -e "Das Programm liest die Passwortdatei \"/etc/passwd\" und zeigt ihren Inhalt gut lesbar an.
+
+AUFRUFPARAMETER DER FUNKTION \"$SCRIPT\":
+	--help|-h|--hilf  Diese Hilfe anzeigen
+
+BEISPIELAUFRUFE:
+	\033[1;32mAufruf         Beschreibung\033[0m
+
+	$SCRIPT root   # Zeigt die Daten aus der passwd zum Account root an. 
+	$SCRIPT bs     # Zeigt die Daten zu allen Accounts an, die mit \"bs\" beginnen.		
+	$SCRIPT        # Zeigt die Daten aus der Datei passwd zu allen Accounts an.
+"
+else  # English help:
+	echo -e "Reads the password file \"/etc/passwd\" and displays it's content human readable at the screen.
+
+PARAMETERS:
+	--help|-h|--hilf  Diese Hilfe anzeigen
+
+EXAMPLES:
+	\033[1;32mCall           Description\033[0m
+
+	$SCRIPT root   # Shows information from passwd according to the account \"root\". 
+	$SCRIPT bs     # Shows information about all accounts, which do begin with \"bs\".		
+	$SCRIPT        # Shows information from file \"passwd\" for all accounts.\n"
+fi
+}
+
+function printField() {
+# Writes pairs of field name and filed content to a temporary file, so
+# that the result can be reformated at the end, when complete.
+	echo -e "\t\e[1;37m${2}:\e[0m# ${1}" >> /tmp/parpass.tmp
+}
+
+function printNotEmpty() {
+	if [ "$1" != "" ]; then
+		printField "$1" "$2"
+	fi
+}
+
+###	main ###################
+case "$1" in 
+	--help|-h|--hilf|-help)
+		hilfe
+		;;
+esac
+
+while read -r user trash uid gid data homeDir loginShell
+do
+if grep -i -q "^$1" <<< "$user" > /dev/null 2>&1; then
+	echo -e "\n\e[1;93m${user} \e[0;33m------------------------------------------------\e[0m";
+	printField "$uid / $gid" "IDs (uid/gid)"
+	printField "$homeDir" "Verzeichnis"
+	printField "$loginShell" "Login-Shell"
+
+	IFS=','
+	read -r realName room workPhone phone comment <<< "$data"
+	printNotEmpty "$realName" "Realname"
+	printNotEmpty "$room" "Zimmer"
+	printNotEmpty "$workPhone" "Telefon"
+	printNotEmpty "$phone" "Privat"
+	printNotEmpty "$comment" "Kommentar"
+	IFS=':'
+	column -s# -t /tmp/parpass.tmp
+	rm /tmp/parpass.tmp
+fi
+done < "/etc/passwd"
+
+IFS="$OLDIFS"
