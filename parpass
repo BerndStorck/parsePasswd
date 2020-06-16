@@ -2,28 +2,50 @@
 #
 # parpass 1.0.0	- 2020-06-14
 #
-# Reads the password file /etc/passwd and search for usernames which
-# begin with $1, and parses the dataset for printing it in humand
-# readabel form to the screen.
+# Reads the password file /etc/passwd and search for user names which
+# begin with $1, and parses the record for printing it in human
+# readable form to the screen.
 #
 # Bernd Storck
 #
-# Kontakt: https://www.facebook.com/BStLinux/
+# Contact: https://www.facebook.com/BStLinux/
 # 
 
 SCRIPT="parpass"
 TITLE="$SCRIPT (parsePasswd)"
-VERSION="1.0.0"
+VERSION="1.1.0"
 OLDIFS="$IFS"
 IFS=":"
-rm -f /tmp/parpass.tmp
+
+if [ "$(echo "$LANG" | cut -c 1-2)" == "de" ]; then
+	UILANG="Deutsch"
+	label_ID="IDs (uid/gid)"
+	label_homeDir="Verzeichnis"
+	label_loginShell="Login-Shell"
+	label_realName="Realname"
+	label_room="Zimmer"
+	label_workPhone="Telefon"
+	label_phone="Privat"
+	label_comment="Kommentar";
+else
+	UILANG="English"
+	label_ID="IDs (uid/gid)"
+	label_homeDir="Directory"
+	label_loginShell="Login Shell"
+	label_realName="Real Name"
+	label_room="Room"
+	label_workPhone="Work Fon"
+	label_phone="Home Phone"
+	label_comment="Comment";
+fi
+
 
 function hilfe () {
 # Displays program purpose and usage help.
 
 echo -e "\e[1;33m$TITLE $VERSION \e[0m\n"
 
-if [ "$(echo "$LANG" | cut -c 1-2)" == "de" ]; then
+if [ "$LANG" == "Deutsch" ]; then
 	echo -e "Das Programm liest die Passwortdatei \"/etc/passwd\" und zeigt ihren Inhalt gut lesbar an.
 
 AUFRUFPARAMETER DER FUNKTION \"$SCRIPT\":
@@ -40,7 +62,7 @@ else  # English help:
 	echo -e "Reads the password file \"/etc/passwd\" and displays it's content human readable at the screen.
 
 PARAMETERS:
-	--help|-h|--hilf  Diese Hilfe anzeigen
+	--help|-h|--hilf  Show this help
 
 EXAMPLES:
 	\033[1;32mCall           Description\033[0m
@@ -53,7 +75,7 @@ fi
 
 function printField() {
 # Writes pairs of field name and filed content to a temporary file, so
-# that the result can be reformated at the end, when complete.
+# that the result can be reformatted at the end, when complete.
 	echo -e "\t\e[1;37m${2}:\e[0m# ${1}" >> /tmp/parpass.tmp
 }
 
@@ -63,28 +85,31 @@ function printNotEmpty() {
 	fi
 }
 
-###	main ###################
+### main ###################
 case "$1" in 
 	--help|-h|--hilf|-help)
 		hilfe
 		;;
 esac
 
+rm -f /tmp/parpass.tmp
+
 while read -r user trash uid gid data homeDir loginShell
 do
 if grep -i -q "^$1" <<< "$user" > /dev/null 2>&1; then
 	echo -e "\n\e[1;93m${user} \e[0;33m------------------------------------------------\e[0m";
-	printField "$uid / $gid" "IDs (uid/gid)"
-	printField "$homeDir" "Verzeichnis"
-	printField "$loginShell" "Login-Shell"
+	printField "$uid / $gid" $label_ID
+	printField "$homeDir" $label_homeDir
+	printField "$loginShell" $label_loginShell
 
 	IFS=','
 	read -r realName room workPhone phone comment <<< "$data"
-	printNotEmpty "$realName" "Realname"
-	printNotEmpty "$room" "Zimmer"
-	printNotEmpty "$workPhone" "Telefon"
-	printNotEmpty "$phone" "Privat"
-	printNotEmpty "$comment" "Kommentar"
+	
+	printNotEmpty "$realName" $label_realName
+	printNotEmpty "$room" $label_room
+	printNotEmpty "$workPhone" $label_workPhone
+	printNotEmpty "$phone" $label_phone
+	printNotEmpty "$comment" $label_comment
 	IFS=':'
 	column -s# -t /tmp/parpass.tmp
 	rm /tmp/parpass.tmp
