@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# parpass 1.0.0	- 2020-06-14
+# parpass 1.1.1	- 2020-06-16
 #
 # Reads the password file /etc/passwd and search for user names which
 # begin with $1, and parses the record for printing it in human
@@ -13,7 +13,7 @@
 
 SCRIPT="parpass"
 TITLE="$SCRIPT (parsePasswd)"
-VERSION="1.1.0"
+VERSION="1.1.1"
 OLDIFS="$IFS"
 IFS=":"
 
@@ -89,6 +89,7 @@ function printNotEmpty() {
 case "$1" in 
 	--help|-h|--hilf|-help)
 		hilfe
+		exit 0
 		;;
 esac
 
@@ -98,18 +99,18 @@ while read -r user trash uid gid data homeDir loginShell
 do
 if grep -i -q "^$1" <<< "$user" > /dev/null 2>&1; then
 	echo -e "\n\e[1;93m${user} \e[0;33m------------------------------------------------\e[0m";
-	printField "$uid / $gid" $label_ID
-	printField "$homeDir" $label_homeDir
-	printField "$loginShell" $label_loginShell
+	printField "$uid / $gid" "$label_ID"
+	printField "$homeDir" "$label_homeDir"
+	printField "$loginShell" "$label_loginShell"
 
 	IFS=','
 	read -r realName room workPhone phone comment <<< "$data"
 	
-	printNotEmpty "$realName" $label_realName
-	printNotEmpty "$room" $label_room
-	printNotEmpty "$workPhone" $label_workPhone
-	printNotEmpty "$phone" $label_phone
-	printNotEmpty "$comment" $label_comment
+	printNotEmpty "$realName" "$label_realName"
+	printNotEmpty "$room" "$label_room"
+	printNotEmpty "$workPhone" "$label_workPhone"
+	printNotEmpty "$phone" "$label_phone"
+	printNotEmpty "$comment" "$label_comment"
 	IFS=':'
 	column -s# -t /tmp/parpass.tmp
 	rm /tmp/parpass.tmp
@@ -117,3 +118,5 @@ fi
 done < "/etc/passwd"
 
 IFS="$OLDIFS"
+
+exit 0
