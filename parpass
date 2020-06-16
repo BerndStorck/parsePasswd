@@ -45,7 +45,7 @@ function hilfe () {
 
 echo -e "\e[1;33m$TITLE $VERSION \e[0m\n"
 
-if [ "$LANG" == "Deutsch" ]; then
+if [ "$UILANG" == "Deutsch" ]; then
 	echo -e "Das Programm liest die Passwortdatei \"/etc/passwd\" und zeigt ihren Inhalt gut lesbar an.
 
 AUFRUFPARAMETER DER FUNKTION \"$SCRIPT\":
