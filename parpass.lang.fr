@@ -1,0 +1,10 @@
+# Franzoesische Variablenwerte:
+  UILANG="French"
+  label_ID="IDs (uid/gid)"
+  label_homeDir="Répertoire personnel"
+  label_loginShell="Shell de connexion"
+  label_realName="Nom réel"
+  label_room="Chambre"
+  label_workPhone="Téléphone professionnel"
+  label_phone="Téléphone personnel"
+  label_comment="Commentaire"
