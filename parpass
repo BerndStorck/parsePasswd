@@ -21,7 +21,7 @@ readonly ORIGINAL_SCRIPT_NAME="parpass"
 readonly CURRENT_SCRIPT_NAME="${0##*/}"  ## Name of the script file
 readonly TITLE="$ORIGINAL_SCRIPT_NAME (parsePasswd)"
 readonly VERSION="1.5.1"
-readonly VERSIONS_TIME_STAMP="2023-11-20 07:42:23"  # date +"%Y-%m-%d %T"
+readonly VERSIONS_TIME_STAMP="2023-11-20 09:13:39"  # date +"%Y-%m-%d %T"
 
 
 # Farbnamensvariablen: ....................................
