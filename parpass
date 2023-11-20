@@ -2,7 +2,7 @@
 #
 # parpass
 #
-# Version:    1.4.0
+# Version:    1.5.0
 # History:    2020-06-14, 2020-07-11, 2023-11-15, 2023-11-19, 2023-11-20
 #
 # Project Description:
@@ -20,8 +20,8 @@
 readonly ORIGINAL_SCRIPT_NAME="parpass"
 readonly CURRENT_SCRIPT_NAME="${0##*/}"  ## Name of the script file
 readonly TITLE="$ORIGINAL_SCRIPT_NAME (parsePasswd)"
-readonly VERSION="1.4.0"
-readonly VERSIONS_TIME_STAMP="2023-11-20 06:00:29"  # date +"%Y-%m-%d %T"
+readonly VERSION="1.5.0"
+readonly VERSIONS_TIME_STAMP="2023-11-20 07:42:23"  # date +"%Y-%m-%d %T"
 
 
 # Farbnamensvariablen: ....................................
@@ -134,12 +134,14 @@ normalize_option () {
 
 
 internal_filter () {
+# Replaces functionallity of the programs 'look', 'grep' etc.,
+# if none of those is available.
   local lines
-	while read -r line; do
-		if [[ "$line" =~ ^$1 ]]; then
-			lines+="$line\n"
-		fi
-	done < /etc/passwd
+  while read -r line; do
+    if [[ "$line" =~ ^$1 ]]; then
+      lines+="$line\n"
+    fi
+  done < /etc/passwd
   echo -e "$lines"
 }
 
@@ -210,6 +212,27 @@ printNotEmpty() {
 }
 
 
+internal_column () {
+# Replaces the external program 'column', if it is not available.
+  local line
+  local maxLen=0
+
+  while read -r line; do
+    field1="$(cut -d'#' -f1 <<< "$line")"
+    field2="$(cut -d'#' -f2 <<< "$line")"
+    if [ "${#field1}" -gt "$maxLen" ]; then
+      maxLen="${#field1}"
+    fi
+  done <<< "$1"
+
+  while read -r line; do
+    field1="$(cut -d'#' -f1 <<< "$line")"
+    field2="$(cut -d'#' -f2 <<< "$line")"
+    printf "%-${maxLen}b %b\n" "$field1" "$field2"
+  done <<< "$1"
+}
+
+
 # Main: ----------------------------------------------
 
 option=$(normalize_option "$1")
@@ -250,9 +273,16 @@ while read -r user trash uid gid data homeDir loginShell; do
   printNotEmpty "$workPhone" "$label_workPhone"
   printNotEmpty "$phone" "$label_phone"
   printNotEmpty "$comment" "$label_comment"
-  IFS=':'
-  echo -e "$dataSet" | column -s# -t
+
+  # Prints data set to screen:
+  if command -v column > /dev/null 2>&1; then
+    echo -e "$dataSet" | column -s# -t
+  else
+    internal_column "$(echo -e "$dataSet")"
+  fi
+
   unset dataSet
+  IFS=':'
 done <<< "$lines"
 
 IFS="$OLDIFS"
