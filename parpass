@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # parpass
 #
-# Version:    1.5.1
+# Version:    1.5.2
 # History:    2020-06-14, 2020-07-11, 2023-11-15, 2023-11-19, 2023-11-20
 #
 # Project Description:
@@ -20,8 +20,8 @@
 readonly ORIGINAL_SCRIPT_NAME="parpass"
 readonly CURRENT_SCRIPT_NAME="${0##*/}"  ## Name of the script file
 readonly TITLE="$ORIGINAL_SCRIPT_NAME (parsePasswd)"
-readonly VERSION="1.5.1"
-readonly VERSIONS_TIME_STAMP="2023-11-20 09:13:39"  # date +"%Y-%m-%d %T"
+readonly VERSION="1.5.2"
+readonly VERSIONS_TIME_STAMP="2023-11-20 20:07:38"  # date +"%Y-%m-%d %T"
 
 
 # Farbnamensvariablen: ....................................
@@ -142,7 +142,7 @@ internal_filter () {
       lines+="$line\n"
     fi
   done < /etc/passwd
-  echo -e "$lines"
+  printf "%b" "$lines"
 }
 
 
@@ -218,16 +218,14 @@ internal_column () {
   local maxLen=0
 
   while read -r line; do
-    field1="$(cut -d'#' -f1 <<< "$line")"
-    field2="$(cut -d'#' -f2 <<< "$line")"
+    field1="${line%%#*}"  # Like: field1="$(cut -d'#' -f1 <<< "$line")"
     if [ "${#field1}" -gt "$maxLen" ]; then
       maxLen="${#field1}"
     fi
   done <<< "$1"
 
   while read -r line; do
-    field1="$(cut -d'#' -f1 <<< "$line")"
-    field2="$(cut -d'#' -f2 <<< "$line")"
+    IFS="#" read -r field1 field2 <<< "${line}"
     printf "%-${maxLen}b %b\n" "$field1" "$field2"
   done <<< "$1"
 }
@@ -260,31 +258,31 @@ esac
 
 lines="$(getLines "$1")"
 if [ -n "$lines" ]; then
-	while read -r user trash uid gid data homeDir loginShell; do
-		plotHeadLine "$user"
-		printField "$uid / $gid" "$label_ID"
-		printField "$homeDir" "$label_homeDir"
-		printField "$loginShell" "$label_loginShell"
+  while read -r user trash uid gid data homeDir loginShell; do
+    plotHeadLine "$user"
+    printField "$uid / $gid" "$label_ID"
+    printField "$homeDir" "$label_homeDir"
+    printField "$loginShell" "$label_loginShell"
 
-		IFS=','
-		read -r realName room workPhone phone comment <<< "$data"
+    IFS=','
+    read -r realName room workPhone phone comment <<< "$data"
 
-		printNotEmpty "$realName" "$label_realName"
-		printNotEmpty "$room" "$label_room"
-		printNotEmpty "$workPhone" "$label_workPhone"
-		printNotEmpty "$phone" "$label_phone"
-		printNotEmpty "$comment" "$label_comment"
+    printNotEmpty "$realName" "$label_realName"
+    printNotEmpty "$room" "$label_room"
+    printNotEmpty "$workPhone" "$label_workPhone"
+    printNotEmpty "$phone" "$label_phone"
+    printNotEmpty "$comment" "$label_comment"
 
-		# Prints data set to screen:
-		if command -v column > /dev/null 2>&1; then
-			echo -e "$dataSet" | column -s# -t
-		else
-			internal_column "$(echo -e "$dataSet")"
-		fi
+    # Prints data set to screen:
+    if command -v column > /dev/null 2>&1; then
+      echo -e "$dataSet" | column -s# -t
+    else
+      internal_column "$(echo -e "$dataSet")"
+    fi
 
-		unset dataSet
-		IFS=':'
-	done <<< "$lines"
+    unset dataSet
+    IFS=':'
+  done <<< "$lines"
 fi
 
 IFS="$OLDIFS"
