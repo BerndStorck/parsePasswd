@@ -7,7 +7,7 @@
 #
 # Project Description:
 #
-# Lists all Accounts from '/etc/passwd' which account name does not begin with a letter.
+# List all accounts from '/etc/passwd' whose account name does not begin with a letter.
 #
 # Author:     Bernd Storck
 # Contact:    https://www.facebook.com/BStLinux/
