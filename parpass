@@ -2,7 +2,7 @@
 #
 # parpass
 #
-# Version:    1.5.2
+# Version:    1.5.3
 # History:    2020-06-14, 2020-07-11, 2023-11-15, 2023-11-19, 2023-11-20
 #
 # Project Description:
@@ -20,8 +20,8 @@
 readonly ORIGINAL_SCRIPT_NAME="parpass"
 readonly CURRENT_SCRIPT_NAME="${0##*/}"  ## Name of the script file
 readonly TITLE="$ORIGINAL_SCRIPT_NAME (parsePasswd)"
-readonly VERSION="1.5.2"
-readonly VERSIONS_TIME_STAMP="2023-11-20 20:07:38"  # date +"%Y-%m-%d %T"
+readonly VERSION="1.5.3"
+readonly VERSIONS_TIME_STAMP="2023-11-22 21:00:27"  # date +"%Y-%m-%d %T"
 
 
 # Farbnamensvariablen: ....................................
@@ -231,6 +231,18 @@ internal_column () {
 }
 
 
+external_output () {
+  echo -e "$1" | column -s# -t
+}
+
+
+internal_output () {
+  internal_column "$(echo -e "$1")"
+}
+
+
+
+
 # Main: ----------------------------------------------
 
 option=$(normalize_option "$1")
@@ -256,6 +268,13 @@ case "$option" in
     ;;
 esac
 
+
+if command -v column > /dev/null 2>&1; then
+  printData="external_output"
+else
+  printData="internal_output"
+fi
+
 lines="$(getLines "$1")"
 if [ -n "$lines" ]; then
   while read -r user trash uid gid data homeDir loginShell; do
@@ -273,12 +292,7 @@ if [ -n "$lines" ]; then
     printNotEmpty "$phone" "$label_phone"
     printNotEmpty "$comment" "$label_comment"
 
-    # Prints data set to screen:
-    if command -v column > /dev/null 2>&1; then
-      echo -e "$dataSet" | column -s# -t
-    else
-      internal_column "$(echo -e "$dataSet")"
-    fi
+    "$printData" "$dataSet"  # Prints data set to screen.
 
     unset dataSet
     IFS=':'
