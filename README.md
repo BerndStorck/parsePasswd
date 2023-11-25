@@ -1,44 +1,85 @@
-# parpass (parsePasswd) #
+# parpass (parsePasswd)
 
-## Deutsch ##
-Das Programm liest die Passwortdatei "/etc/passwd" und zeigt ihren Inhalt gut lesbar an.
+## Inhalt
 
-Als Aufrufparameter kann ein Account-Name oder ein der Anfang eines Account-Namens angegeben werden. Das Programm sucht unter Missachtung des Unterschieds zwischen Groß- und  Kleinschreibung nach passenden Einträgen in der Passwortdatei.
+* [Deutsche Programmbeschreibung](#deutsch)
+* [English program description](#english)
 
-### Beispielaufrufe ###
+## Deutsch
 
+**`parpass` ist ein Bash-Script, das die Passwortdatei `/etc/passwd` liest und ihren Inhalt für Menschen gut lesbar und übersichtlich anzeigt.**
+
+### Aufruf
+
+Das Programm kann ohne Argumente aufgerufen werden, um alle Datensätze der Passwortdatei anzuzeigen. Alternativ kann ein Account-Name als Parameter angegeben werden, wobei auch der Anfang des Namens ausreicht und Groß- und Kleinschreibung keine Rolle spielen.
+
+Genauer ausgedrückt: parpass zeigt die Datensätze aus der Passwortdatei an, deren Account-Namensfeld einen Wert enthält, der mit der Zeichenkette beginnt, die `parpass` als Parameter übergeben wurde.
+
+#### Beispielaufrufe
+
+- Alle Datensätze aus der Datei `/etc/passwd` im Pager `less` anzeigen: `parpass | less -r`
 - Anzeige der Informationen zum Account "root": `parpass root`
 - Mit gleicher Wirkung, da unabhängig von Groß- und Kleinschreibung: `parpass RooT`
 - Anzeige der Informationen aus der Passwortdatei zu allen Accounts, die mit einem "L" beginnen: `parpass L`
 
-Der Aufruf `parpass --hilf` zeigt die Hileseite des Programms an.
+Der Aufruf `parpass --hilf` zeigt die Hilfeseite des Programms an.
 
-### Abhängigkeiten ###
+### Abhängigkeiten
 
-Das Skript benutzt das Programm "column".
+Das Skript benutzt das Programm "column", daher empfehle ich, `column` zu installieren!
 
-### Kontakt ###
+### Kontakt
 
-https://www.facebook.com/BStLinux
+Bei Fragen oder Anregungen kann der Kontakt zur [BStLinux-Community](https://www.facebook.com/groups/164934964047448) über deren Facebook-Seite aufgenommen werden.
 
-## English ##
-The script reads the password file "/etc/passwd" and displays the contained information in a human-readable format on the screen.
+https://www.facebook.com/groups/164934964047448
 
-When called, you can provide the script with an account name or the beginning of an account name. The program searches case-insensitively for matching entries in the password file.
+---
 
-### Examples ###
+## Lizenz
 
-- Displays the information for the "root" account: `parpass root`
-- Same effect, because it's case-insensitive: `parpass RooT`
-- Displays the information from the password file for all accounts that start with "L": `parpass L`
+Dieses Programm ist freie Software: Sie können es unter den Bedingungen der GNU General Public License, wie von der Free Software Foundation veröffentlicht, weiterverbreiten und/oder modifizieren, entweder gemäß Version 3 der Lizenz oder (nach Ihrer Wahl) jeder späteren Version.
 
-`parpass --help` displays the help page of the program.
+Dieses Programm wird in der Hoffnung verteilt, dass es nützlich sein wird, aber **ohne jede Gewährleistung**; auch ohne die implizite Gewährleistung der Marktgängigkeit oder Eignung für einen bestimmten Zweck. Weitere Einzelheiten finden Sie in der GNU General Public License.
+
+Sie finden die GNU General Public License unter <http://www.gnu.org/licenses/>.
+
+
+## English
+
+**`parpass` is a Bash script that reads the password file `/etc/passwd` and displays its content in a human-readable and clear format.**
+
+### Usage
+
+The program can be called without arguments to display all records in the password file. Alternatively, an account name can be specified as a parameter, where the beginning of the name is sufficient and case sensitivity does not matter.
+
+In other words, parpass displays the records from the password file whose account name field contains a value that begins with the string passed as a parameter to `parpass`.
+
+#### Example Calls
+
+- Display all records from the file `/etc/passwd` in the pager `less`: `parpass | less -r`
+- Display information for the "root" account: `parpass root`
+- Same effect, as it is case-insensitive: `parpass RooT`
+- Display information from the password file for all accounts that start with "L": `parpass L`
+
+The command `parpass --help` displays the program's help page.
 
 ### Dependencies
 
-The script requires the "column" program.
+The script uses the "column" program, so I recommend installing `column`!
 
-### Contact ###
+### Contact
 
-https://www.facebook.com/BStLinux
+For questions or suggestions, contact the [BStLinux Community](https://www.facebook.com/groups/164934964047448) through their Facebook page.
 
+https://www.facebook.com/groups/164934964047448
+
+---
+
+### License
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but **without any warranty**; without even the implied warranty of merchantability or fitness for a particular purpose. See the GNU General Public License for more details.
+
+You will find the GNU General Public License at <http://www.gnu.org/licenses/>.
