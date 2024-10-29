@@ -1,6 +1,6 @@
 # Franzoesische Variablenwerte:
   UILANG="French"
-  label_ID="IDs (uid/gid)"
+  label="IDs (uid/gid)"
   label_homeDir="Répertoire personnel"
   label_loginShell="Shell de connexion"
   label_realName="Nom réel"
@@ -8,3 +8,19 @@
   label_workPhone="Téléphone professionnel"
   label_phone="Téléphone personnel"
   label_comment="Commentaire"
+  
+  field_descriptions[1]="Nom d'utilisateur;Nom de connexion de l'utilisateur;nom"
+  field_descriptions[2]="Mot de passe;Espace réservé pour le mot de passe chiffré (généralement 'x')"
+  field_descriptions[3]="UID;Numéro d'identification de l'utilisateur"
+  field_descriptions[4]="GID;Numéro d'identification du groupe principal"
+  field_descriptions[5]="GECOS;Informations sur l'utilisateur (nom complet, coordonnées)"
+  field_descriptions[6]="Répertoire personnel;Chemin vers le répertoire personnel de l'utilisateur;repertoire"
+  field_descriptions[7]="Shell de connexion;Chemin vers le shell par défaut de l'utilisateur;shell"
+  
+ERROR="ERREUR"
+ERR_INCORRECT_FIELD="Nom ou numéro de champ incorrect"
+INFO_CORRECT_FIELDS="Veuillez utiliser un nom de champ ou un numéro de champ valide!"
+AVAILABLE_FIELD_NAMES="Noms de champ disponibles"
+AVAILABLE_FIELD_NUMBERS="Numéros de champ disponibles"
+
+FIELD="Champ de Données"

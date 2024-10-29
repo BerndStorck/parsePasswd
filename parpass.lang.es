@@ -1,6 +1,6 @@
-Spanische Variablenwerte:
+# Spanische Variablenwerte:
   UILANG="Spanish"
-  label_ID="IDs (uid/gid)"
+  label="IDs (uid/gid)"
   label_homeDir="Directorio personal"
   label_loginShell="Shell de inicio de sesión"
   label_realName="Nombre real"
@@ -8,3 +8,19 @@ Spanische Variablenwerte:
   label_workPhone="Teléfono de trabajo"
   label_phone="Teléfono de casa"
   label_comment="Comentario"
+
+  field_descriptions[1]="Nombre de usuario;Nombre de inicio de sesión del usuario;nombre"
+  field_descriptions[2]="Contraseña;Marcador de posición para la contraseña cifrada (generalmente 'x')"
+  field_descriptions[3]="UID;Número de identificación del usuario"
+  field_descriptions[4]="GID;Número de identificación del grupo primario"
+  field_descriptions[5]="GECOS;Información del usuario (nombre completo, datos de contacto)"
+  field_descriptions[6]="Directorio personal;Ruta al directorio personal del usuario;directorio"
+  field_descriptions[7]="Shell de inicio;Ruta al shell predeterminado del usuario;shell"
+  
+ERROR="ERROR"
+ERR_INCORRECT_FIELD="Nombre o número de campo incorrecto proporcionado"
+INFO_CORRECT_FIELDS="¡Por favor, use un nombre de campo o un número de campo válido!"
+AVAILABLE_FIELD_NAMES="Nombres de campo disponibles"
+AVAILABLE_FIELD_NUMBERS="Números de campo disponibles"
+
+FIELD="Campo de Datos"

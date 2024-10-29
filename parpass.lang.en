@@ -7,3 +7,19 @@
   label_workPhone="Work Fon"
   label_phone="Home Phone"
   label_comment="Comment"
+  
+  field_descriptions[1]="Username;Login name of the user;name"
+  field_descriptions[2]="Password;Placeholder for encrypted password (usually 'x')"
+  field_descriptions[3]="UID;User ID number"
+  field_descriptions[4]="GID;Primary group ID number"
+  field_descriptions[5]="GECOS;User information (full name, contact details)"
+  field_descriptions[6]="Home directory;Path to user's home directory;directory"
+  field_descriptions[7]="Login shell;Path to user's default shell;shell"
+  
+ERROR="ERROR"
+ERR_INCORRECT_FIELD="Incorrect field name or number provided"
+INFO_CORRECT_FIELDS="Please use a valid field name or field number!"
+AVAILABLE_FIELD_NAMES="Available field names"
+AVAILABLE_FIELD_NUMBERS="Available field numbers"
+
+FIELD="Field"

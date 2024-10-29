@@ -7,3 +7,19 @@
   label_workPhone="Telefon"
   label_phone="Privat"
   label_comment="Kommentar"
+
+  field_descriptions[1]="Benutzername;Anmeldename des Benutzers;name"
+  field_descriptions[2]="Passwort;Platzhalter für verschlüsseltes Passwort (normalerweise 'x')"
+  field_descriptions[3]="UID;Benutzer-ID-Nummer"
+  field_descriptions[4]="GID;Primäre Gruppen-ID-Nummer"
+  field_descriptions[5]="GECOS;Benutzerinformationen (vollständiger Name, Kontaktdaten)"
+  field_descriptions[6]="Heimatverzeichnis;Pfad zum Heimatverzeichnis des Benutzers;verzeichnis"
+  field_descriptions[7]="Anmelde-Shell;Pfad zur Standard-Shell des Benutzers;shell"
+
+ERROR="FEHLER"
+ERR_INCORRECT_FIELD="Ungültiger Feldname oder -nummer angegeben"
+INFO_CORRECT_FIELDS="Bitte verwenden Sie einen gültigen Feldnamen oder eine Feldnummer!"
+AVAILABLE_FIELD_NAMES="Verfügbare Feldnamen"
+AVAILABLE_FIELD_NUMBERS="Verfügbare Feldnummern"
+
+FIELD="Datenfeld"
