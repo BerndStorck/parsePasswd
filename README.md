@@ -15,12 +15,20 @@ Das Programm kann ohne Argumente aufgerufen werden, um alle Datensätze der Pass
 
 Genauer ausgedrückt: parpass zeigt die Datensätze aus der Passwortdatei an, deren Account-Namensfeld einen Wert enthält, der mit der Zeichenkette beginnt, die `parpass` als Parameter übergeben wurde.
 
+Das Skript kann helfen, den Aufbau der Datei `/etc/passwd` besser zu verstehen:
+
+- Mit dem Parameter `-I` kann eine kurze Beschreibung der Felder jeder Zeile in der Datei `/etc/passwd` abgerufen werden.
+- Mit dem Parameter `-i` und einem Feldnamen oder einer Feldnummer (1-7) ruft man die Kurzbeschreibung eines einzelnen Datenfelds ab.
+
 #### Beispielaufrufe
 
 - Alle Datensätze aus der Datei `/etc/passwd` im Pager `less` anzeigen: `parpass | less -r`
 - Anzeige der Informationen zum Account "root": `parpass root`
 - Mit gleicher Wirkung, da unabhängig von Groß- und Kleinschreibung: `parpass RooT`
 - Anzeige der Informationen aus der Passwortdatei zu allen Accounts, die mit einem "L" beginnen: `parpass L`
+- Anzeige einer kurzen Beschreibung alle Datenfelder, aus der jede Zeile der `/etc/passwd` besteht: `parpass -I
+- Anzeige der Kurzbeschreibung des siebten Datenfelds jeder Zeile der '/etc/passwd`: `parpass -i 7`
+- Anzeige der Kurzbeschreibung des GECOS-Datenfeldes: `parpass -i gecos`
 
 Der Aufruf `parpass --hilf` zeigt die Hilfeseite des Programms an.
 
@@ -55,12 +63,21 @@ The program can be called without arguments to display all records in the passwo
 
 In other words, parpass displays the records from the password file whose account name field contains a value that begins with the string passed as a parameter to `parpass`.
 
+The script can help to better understand the structure of the `/etc/passwd` file:
+
+- Using the `-I` parameter, you can retrieve a brief description of the fields of each line in the `/etc/passwd` file.
+- Using the `-i` parameter and a field name or field number (1-7), you can retrieve the brief description of an individual data field.
+
+
 #### Example Calls
 
 - Display all records from the file `/etc/passwd` in the pager `less`: `parpass | less -r`
 - Display information for the "root" account: `parpass root`
 - Same effect, as it is case-insensitive: `parpass RooT`
 - Display information from the password file for all accounts that start with "L": `parpass L`
+- Display a brief description of all data fields in each line of the `/etc/passwd` file: `parpass -I`
+- Display the brief description of the seventh data field of each line in the `/etc/passwd` file: `parpass -i 7`
+- Display the brief description of the GECOS data field: `parpass -i gecos`
 
 The command `parpass --help` displays the program's help page.
 
