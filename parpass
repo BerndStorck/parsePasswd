@@ -1,27 +1,32 @@
 #!/usr/bin/env bash
 #
 # parpass
+# Version: Look at the first constant definitions below!
 #
-# Version:    1.5.3
-# History:    2020-06-14, 2020-07-11, 2023-11-15, 2023-11-19, 2023-11-20
+# History:    2020-06-14, 2020-07-11, 2023-11-15, 2023-11-19, 2023-11-20, 2023-11-23, 2024-10-28
 #
 # Project Description:
 #
 # Reads the password file /etc/passwd, searches for user names beginning with $1,
 # and parses the record to print it in a human-readable form on the screen.
 #
+# Usage:
+# ./parpass <account_name>
+#
 # Author:     Bernd Storck
 # Contact:    https://www.facebook.com/BStLinux/
 #
-# Copyright:  2023, Bernd Storck
+# Copyright:  2024, Bernd Storck
 # License:    GNU General Public License 3.0
+
+# set -x
 
 # Daten zur Selbstbeschreibung des Scripts: ...............
 readonly ORIGINAL_SCRIPT_NAME="parpass"
 readonly CURRENT_SCRIPT_NAME="${0##*/}"  ## Name of the script file
 readonly TITLE="$ORIGINAL_SCRIPT_NAME (parsePasswd)"
-readonly VERSION="1.5.3"
-readonly VERSIONS_TIME_STAMP="2023-11-22 21:00:27"  # date +"%Y-%m-%d %T"
+readonly VERSION="1.6.1"
+readonly VERSIONS_TIME_STAMP="2024-10-29 17:51:35"  # date +"%Y-%m-%d %T"
 
 
 # Farbnamensvariablen: ....................................
@@ -36,10 +41,15 @@ readonly COLOROFF='\e[0m'
 OLDIFS="$IFS"
 IFS=":"
 
+declare -a field_descriptions  # Array initialization for records with short descriptions for fields of `/etc/passwd`.
+declare -a reduced_lines  # Array initialization for records reduced by './parpasscut'.
+selected_record_fields_index="1-7"  # Used like a static var in select_record_fields().
+
 # Defines the name of the language file according to system language:
 readonly language_file_name="parpass.lang.${LANG:0:2}"
 
 # Searching for an external language file:
+file_found=false
 for config_path in "$HOME/parpass/" "$HOME/" "/etc/parpass/" "/etc/" "./"; do
   language_file="${config_path}$language_file_name"
   if [ -f "$language_file" ]; then
@@ -61,7 +71,24 @@ if ! "$file_found" ; then
   label_workPhone="Work Fon"
   label_phone="Home Phone"
   label_comment="Comment"
+
+  field_descriptions[1]="Username;Login name of the user"
+  field_descriptions[2]="Password;Placeholder for encrypted password (usually 'x')"
+  field_descriptions[3]="UID;User ID number"
+  field_descriptions[4]="GID;Primary group ID number"
+  field_descriptions[5]="GECOS;User information (full name, contact details)"
+  field_descriptions[6]="Home directory;Path to user's home directory "
+  field_descriptions[7]="Login shell;Path to user's default shell"
+
+  ERROR="ERROR"
+  ERR_INCORRECT_FIELD="Incorrect field name or number provided"
+  INFO_CORRECT_FIELDS="Please use a valid field name or field number!"
+  AVAILABLE_FIELD_NAMES="Available field names"
+  AVAILABLE_FIELD_NUMBERS="Available field numbers"
+
+  FIELD="Field"
 fi
+
 
 # Functions: -----------------------------------------
 
@@ -74,32 +101,150 @@ if [ "$UILANG" = "Deutsch" ]; then
   echo -e "Das Programm liest die Passwortdatei \"/etc/passwd\" und zeigt ihren Inhalt gut lesbar an.
 
 AUFRUFPARAMETER:
-  --help|-h|--hilf   # Diese Hilfe anzeigen
-  --version|-V       # Die Version dieses Installationsskripts anzeigen.
-  --full_version     # Eine ausführliche Versionsinformation anzeigen.
+  --help|-h|--hilf      # Diese Hilfe anzeigen.
+  --version|-V          # Die Version dieses Bash-Skripts anzeigen.
+  --full_version        # Eine ausführliche Versionsinformation anzeigen.
+  -i <feldname|nummer>  # Ein Feld der '/etc/passwd' erklären.
+  -I                    # Alle Felder der '/etc/passwd' erklären.
 
 BEISPIELAUFRUFE:
-  ${GREEN_BOLD}Aufruf            Beschreibung${COLOROFF}
+  ${GREEN_BOLD}Aufruf                Beschreibung${COLOROFF}
 
-  $CURRENT_SCRIPT_NAME root   # Zeigt die Daten aus der passwd zum Account root an.
-  $CURRENT_SCRIPT_NAME bs     # Zeigt die Daten zu allen Accounts an, die mit \"bs\" beginnen.
-  $CURRENT_SCRIPT_NAME        # Zeigt die Daten aus der Datei passwd zu allen Accounts an.
+  $(indented_program_call "$CURRENT_SCRIPT_NAME root")# Zeigt die Daten aus der '/etc/passwd' zum Account 'root' an.
+  $(indented_program_call "$CURRENT_SCRIPT_NAME bs")# Zeigt die Daten zu allen Accounts an, die mit 'bs' beginnen.
+  $(indented_program_call "$CURRENT_SCRIPT_NAME")# Zeigt die Daten aus der Datei '/etc/passwd' zu allen Accounts an.
+
+  $(indented_program_call "$CURRENT_SCRIPT_NAME -i uid")# Erklärt das UID-Feld.
+  $(indented_program_call "$CURRENT_SCRIPT_NAME -i 7")# Erklärt das 7. Feld der Zeilen in der '/etc/passwd'.
 "
 else  # English help:
-  echo -e "Reads the password file \"/etc/passwd\" and displays its content human-readable on the screen.
+  echo -e "Reads the password file \"/etc/passwd\" and displays its content in a human-readable format on the screen.
 
 PARAMETERS:
-  --help|-h|--hilf   # Display this help.
-  --version|-V       # Display the script version.
-  --full_version     # Display detailed version information.
+  --help|-h|--hilf       # Displays this help message.
+  --version|-V           # Displays the script version.
+  --full_version         # Displays detailed version information.
+  -i <fieldname|number>  # Describes a field of '/etc/passwd'.
+  -I                     # Describes all fields of '/etc/passwd'.
 
 EXAMPLES:
-  ${GREEN_BOLD}Call              Description${COLOROFF}
+  ${GREEN_BOLD}Command                Description${COLOROFF}
 
-  $CURRENT_SCRIPT_NAME root   # Shows information from passwd according to the account. \"root\".
-  $CURRENT_SCRIPT_NAME bs     # Shows information about all accounts, which do begin with \"bs\".
-  $CURRENT_SCRIPT_NAME        # Shows information from file \"passwd\" for all accounts.\n"
+  $(indented_program_call "$CURRENT_SCRIPT_NAME root" "23")# Displays information from the passwd file for the 'root' account.
+  $(indented_program_call "$CURRENT_SCRIPT_NAME bs" "23")# Displays information about all accounts that begin with 'bs'.
+  $(indented_program_call "$CURRENT_SCRIPT_NAME" "23")# Displays information from the passwd file for all accounts.
+
+  $(indented_program_call "$CURRENT_SCRIPT_NAME -i uid" "23")# Explains the UID field in '/etc/passwd'.
+  $(indented_program_call "$CURRENT_SCRIPT_NAME -i 7" "23")# Explains the 7th field of the line in '/etc/passwd'.
+"
 fi
+}
+
+
+# indented_program_call: Formats a program call string for help documentation.  
+# This function takes a program name as input, and produces a formatted output  
+# string that aligns example calls uniformly, regardless of any changes to   
+# the script filename. It ensures consistent indentation by padding the output   
+# to a specified total length, defaulting to 22 characters if not provided.
+indented_program_call () {
+  local input
+  local output
+  local postfix_length
+  local complete_length
+  
+  complete_length="${2:-22}"
+  
+  input="$1"
+  input_length="${#input}"
+  postfix_length=$(( complete_length - input_length ))
+  output="${input}$(printf "%*s" "$postfix_length" "")"
+
+  echo "$output"
+}
+
+
+handle_long_options() {
+  for i in "$@"; do
+    option=$(normalize_option "$i")
+    case "$option" in
+      --help|--hilf)
+        usage
+        exit 0
+        ;;
+      --version)
+        printf "%s (Version %s)\n" "$ORIGINAL_SCRIPT_NAME" "$VERSION"
+        exit 0
+        ;;
+      --fullversion|--id|--identifi[ck]ation)
+        print_program_identification
+        exit 0
+        ;;
+#     --info|--describe|--explain)
+#       explain_field
+#       ;;
+      *)
+        unset option
+        ;;
+    esac
+  done
+}
+
+
+handle_single_letter_options() {
+  local option
+  local parameter_value
+
+  option="$1"
+  [ -n "$2" ] && parameter_value="$2"
+
+  case $option in
+    f)  # Full-text search in selected fields.
+       selected_record_fields_index="$parameter_value"
+       modus="inFieldsSearch"
+       ;;
+    F)  # Full-text search in complete data set, the complete line.
+       modus="fullSearch"
+       ;;
+    i) # Short explanation of a field from '/etc/passwd`.
+       explain_field "$parameter_value"
+       exit 0
+       ;;
+    I) # Short explanation of a field from '/etc/passwd`.
+       explain_all_fields
+       exit 0
+       ;;
+    h) usage; exit 0 ;;  # Display help
+    \#) echo "$VERSION"; exit 0 ;;  # Display version number
+    V)
+       printf "%s (Version %s)\n" "$ORIGINAL_SCRIPT_NAME" "$VERSION"
+       exit 0
+       ;;
+  esac
+}
+
+
+identify_target_fields () {
+# Parses the parameter value of the option '-f'.
+#
+  local number_of_fields
+  local data_file
+echo "1: \"$1\" / 2: \"$2\""
+  [ ! "$2" ] && data_file="/etc/passwd" || data_file="$2"
+
+  number_of_fields="$(colons="$(head -n 1 "$data_file" | sed -E 's/[^:]//g')";echo "${#colons}")"
+  echo "[DEBUG] number_of_fields = $number_of_fields"
+  # Remove numbers greater than 9, which are not used as section numbers:
+  section="$(sed -E "s/([$(( number_of_fields+1 ))-9]|[[:digit:]]{2,})//" <<< "$1")"
+echo "section: \"$section\""
+  # Remove double commas:
+  section="$(sed -E 's:,+:,:g' <<< "$section")"
+echo "section: \"$section\""
+  # Remove leading comma:
+  section="$(sed -E 's:^,::' <<< "$section")"
+echo "section: \"$section\""
+  # Remove comma at the end of the option:
+  section="$(sed -E 's:,$::' <<< "$section")"
+echo "section: \"$section\""; exit
 }
 
 
@@ -146,6 +291,87 @@ internal_filter () {
 }
 
 
+# Function: get_field_by_name
+# Description: This function searches for a specified field name in an array of field descriptions.
+#              It retrieves the corresponding field description if the field name matches or if
+#              an alternative field name (if available) matches the searched field name.
+# Parameters:
+#   $1 - The field name to search for. The search is case-insensitive.
+# Returns:
+#   0 if the field is found, and prints the record counter, field name, and field description.
+#   Otherwise, it returns 1 if the field is not found (not explicitly handled in this code).
+get_field_by_name () {
+  local searched_field
+  local record_counter
+  local field_name
+  local field_description
+  local alternative_field_name
+  local record_length
+
+  searched_field="$1"
+
+  for content in "${field_descriptions[@]}"; do
+    (( record_counter++ ))
+    alternative_field_name=
+    field_name="${content%%;*}"
+    field_description="${content#*;}"      # Entfernt alles bis zum ersten Semikolon
+    field_description="${field_description%%;*}" # Entfernt alles ab dem nächsten Semikolon
+
+    record_length="$(grep -Fo ';' <<< "$content" 2> /dev/null | wc -l)"
+    # echo "DEBUG: record_length: \"$record_length\" / content: \"$content\""
+    if (( record_length == 2 )); then  # Holen des dritten Feldes:
+       alternative_field_name="${content##*;}"
+    fi
+    if [ "${searched_field,,}" = "${field_name,,}" ] || [ "${searched_field,,}" = "${alternative_field_name,,}" ] ; then
+      printf "%d: %s = %s\n" "$record_counter" "$field_name" "$field_description"
+      return 0
+    fi
+  done
+}
+
+
+get_field_names () {
+  local field_number
+  local field_name
+  local answer
+  for field_number in {1..7}; do
+    field_name="${field_descriptions[field_number]/;*/}"
+    answer="${answer}$field_name, "
+  done
+  echo -e "${answer:0:-2}"
+}
+
+
+explain_field () {
+  local field_id
+  local description
+  field_id="$1"
+  if grep -Eq '^[1-7]$' <<< "$field_id" 2> /dev/null; then
+    description="${field_descriptions[field_id]/;/ = }"
+    description="${description/;*/}"
+    printf "%s %d: %s\n" "$FIELD" "$field_id" "$description"
+  elif grep -Eq '[[:alpha:]]{3,}' <<< "$field_id"; then
+    get_field_by_name "$field_id"
+  else
+    printf "%s: %s: '%s'. %s\n\n" "$ERROR" "$ERR_INCORRECT_FIELD" "$field_id" "$INFO_CORRECT_FIELDS"> /dev/stderr
+    printf "%s: %s\n" "$AVAILABLE_FIELD_NAMES" "$(get_field_names)." > /dev/stderr
+    printf "%s: 1-7\n" "$AVAILABLE_FIELD_NUMBERS" > /dev/stderr
+  fi
+  exit
+}
+
+
+explain_all_fields () {
+  local field_number
+  local description
+  for field_number in {1..7}; do
+    description="${field_descriptions[field_number]/;/ = }"
+    description="${description/;*/}"
+    printf "%s %d: %s\n" "$FIELD" "$field_number" "$description"
+  done
+}
+
+
 getLines () {
 # Filters those lines which are beginning with "$1".
 #
@@ -180,6 +406,90 @@ getLines () {
   fi
 
   echo "$answer"
+}
+
+
+fullSearch () {
+# Gets all lines which do contain "$1".
+#
+  local string_to_find="$1"
+  local data_file
+  local prog
+  local answer
+
+  [ -z "$2" ] && data_file="/etc/passwd" || data_file="$2"
+
+  prog="$(command -v rg grep agrep tre-agrep 2> /dev/null | head -n 1)"
+  prog="$(basename "$prog")"
+  case "$prog" in
+    rg)
+      answer="$(rg -NF "$string_to_find" "$data_file")"
+      ;;
+    grep)
+      answer="$($prog -F "$string_to_find" "$data_file")"
+      ;;
+    agrep|tre-agrep)
+      answer="$($prog -0 "$string_to_find" "$data_file")"
+      ;;
+  esac
+
+# if ! "$program_found"; then
+#   answer="$(internal_filter "$1")"
+# fi
+
+  echo "$answer"
+}
+
+
+inFieldsSearch () {
+# Gets all lines whit "$1" in certain fields
+#
+  local string_to_find
+  local data_file
+  local prog
+  local answer
+  local lines
+  local field_selectors
+
+  field_seletors="$2"
+  string_to_find="$1"
+
+  [ -z "$3" ] && data_file="/etc/passwd" || data_file="$3"
+echo "[DEBUG] $field_seletors / $string_to_find / $data_file" > /dev/stderr
+  prog="$(command -v rg grep agrep tre-agrep 2> /dev/null | head -n 1)"
+  prog="$(basename "$prog")"
+  case "$prog" in
+    rg)
+      mapfile -c 1 -C select_record_fields -t lines < <(rg -NF "$string_to_find" "$data_file")
+      for (( i=0; i<=${#lines[@]}; i++ )); do
+        answer+="${lines[$i]}\n"
+      done
+      ;;
+    grep)
+      answer="$($prog -F "$string_to_find" "$data_file")"
+      ;;
+    agrep|tre-agrep)
+      answer="$($prog -0 "$string_to_find" "$data_file")"
+      ;;
+  esac
+
+# if ! "$program_found"; then
+#   answer="$(internal_filter "$1")"
+# fi
+
+  echo "$answer"
+}
+
+
+select_record_fields () {
+# Callback function used in inFieldsSearch.
+#
+    local index="$1"
+    local line="$2"  # was: local line=${MAPFILE[$index]}
+echo "DEBUG: In 'select_record_fields()'" > /dev/stderr
+    # Schreibe das gefilterte Ergebnis in ein zweites Array
+    reduced_lines["$index"]=$(echo "$line" |\
+    cut -d: -f "$selected_record_fields_index")
 }
 
 
@@ -231,8 +541,29 @@ internal_column () {
 }
 
 
+getMaxLength () {
+  local len
+  local maxLen=0
+
+  for fieldName in "$label_ID" "$label_homeDir" "$label_loginShell" "$label_realName" "$label_room" "$label_workPhone" "$label_phone" "$label_comment"; do
+    len=$(echo -n "$fieldName" | wc -c)
+    if [ "$len" -gt "$maxLen" ]; then
+      maxLen="$len"
+      echo "fieldName: \"$fieldName\" / maxLen = $maxLen" > /dev/stderr
+    fi
+  done
+  echo "$maxLen"
+}
+
+
 external_output () {
-  echo -e "$1" | column -s# -t
+  local maxLen
+  maxLen="$(( maxLenOfFieldNames + 10 ))"
+
+  # was: echo -e "$1" | column -s# -t
+  echo -e "$1" |\
+  awk -F '\n' '{printf "%s\n", $1}' |\
+  awk -v maxLen="$maxLen" -F '#' '{printf "%-*s\t%s\n", maxLen, $1, $2}'
 }
 
 
@@ -241,41 +572,42 @@ internal_output () {
 }
 
 
-
-
 # Main: ----------------------------------------------
 
-option=$(normalize_option "$1")
-case "$option" in
-  --help|-h|--hilf|-help)
-    usage
-    exit 0
-    ;;
-  --version|-V)
-    printf "%s (Version %s)\n" "$ORIGINAL_SCRIPT_NAME" "$VERSION"
-    exit 0
-    ;;
-  --fullversion|--id|--identifi[ck]ation)
-    print_program_identification
-    exit 0
-    ;;
-  -\#)  # Versionsnummer anzeigen
-    echo "$VERSION"
-    exit 0
-    ;;
-  *)
-    unset option
-    ;;
-esac
+
+# Catch calls with long options:
+if [ "$#" -gt 0 ]; then
+  handle_long_options "$@"
+fi
+
+# Catch single letter options:
+while getopts "f:FIi:hV" opt; do
+  handle_single_letter_options "$opt" "$OPTARG" "/etc/passwd"
+done
+shift $((OPTIND-1))
 
 
-if command -v column > /dev/null 2>&1; then
+# if command -v column > /dev/null 2>&1; then
+if command -v awk > /dev/null 2>&1; then
+  # echo "DEBUG: external_output" > /dev/stderr
   printData="external_output"
 else
+  # echo "DEBUG: internal_output" > /dev/stderr
   printData="internal_output"
 fi
 
-lines="$(getLines "$1")"
+if [ -z "$modus" ]; then
+  lines="$(getLines "$1")"
+else
+  lines="$(eval "$modus" "$1" "$2")"
+fi
+
+lines="$(echo -e "$lines")"
+
+# Ermitteln des laengsten Feldnamensberzeichners
+# in der vom Script gewaehlten Ausagbesprache:
+maxLenOfFieldNames="$(getMaxLength)"
+
 if [ -n "$lines" ]; then
   while read -r user trash uid gid data homeDir loginShell; do
     plotHeadLine "$user"
